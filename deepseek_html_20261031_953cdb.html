@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Lan. - Cinematic English Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f7f6f2;
+            --text-main: #1a1a1a;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --card-bg: #ffffff;
+            --dark-bg: #151515;
+            --border-color: #e5e4e0;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Inter', sans-serif;
+            --max-width: 1280px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            /* 悬浮阴影变量 */
+            --shadow-base: 0 4px 20px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.08);
+            
+            --mouse-x: -1000px;
+            --mouse-y: -1000px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            scroll-behavior: smooth;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; display: block; }
+        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 40px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+        svg.icon {
+            width: 18px; height: 18px; fill: none; stroke: currentColor;
+            stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+            transition: stroke 0.2s;
+        }
+        svg.icon-sm { width: 16px; height: 16px; }
+
+        /* 导航栏 */
+        .navbar { padding: 25px 0; border-bottom: 1px solid var(--border-color); }
+        .logo { font-family: var(--font-serif); font-size: 24px; font-weight: 600; transition: opacity 0.2s; }
+        .logo:hover { opacity: 0.7; }
+        .nav-links { display: flex; gap: 35px; font-size: 13px; font-weight: 500; }
+        .nav-links a { position: relative; transition: color 0.3s; }
+        .nav-links a::after {
+            content: ''; position: absolute; width: 0; height: 1px; bottom: -4px; left: 0;
+            background-color: var(--text-main); transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--text-main); }
+        .nav-links a:hover::after { width: 100%; }
+        
+        .search-btn {
+            border: 1px solid var(--border-color); background: transparent; padding: 8px 16px;
+            border-radius: 30px; font-size: 13px; display: flex; align-items: center; gap: 8px; 
+            cursor: pointer; color: var(--text-main); transition: var(--transition);
+        }
+        .search-btn:hover { border-color: var(--text-main); background: #fff; transform: translateY(-1px); box-shadow: var(--shadow-base); }
+        .search-btn:active { transform: scale(0.96); }
+
+        /* === Hero 区域 === */
+        .hero {
+            margin-top: 20px; border-radius: 16px; overflow: hidden; position: relative; height: 600px;
+            /* 增加整体悬浮阴影 */
+            box-shadow: var(--shadow-base);
+        }
+        
+        .hero-bg {
+            position: absolute;
+            inset: -30px;
+            background: url('https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 0;
+            will-change: transform;
+        }
+        
+        /* 渐变暗色遮罩 */
+        .hero::before {
+            content: ''; position: absolute; inset: 0; z-index: 1;
+            background: linear-gradient(to right, rgba(10,10,10,0.9) 0%, rgba(10,10,10,0.4) 60%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* 光追特效 */
+        .hero::after {
+            content: ''; position: absolute; inset: 0; z-index: 2;
+            pointer-events: none;
+            background: radial-gradient(
+                circle 150px at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.04) 40%, 
+                transparent 70%
+            );
+            mix-blend-mode: screen;
+            transition: opacity 0.3s;
+        }
+
+        /* 波浪涟漪容器 */
+        .hero-ripples {
+            position: absolute; inset: 0; z-index: 3;
+            pointer-events: none; overflow: hidden;
+        }
+
+        /* 水波纹 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(
+                circle at center,
+                transparent 30%,
+                rgba(255, 255, 255, 0.03) 50%,
+                rgba(255, 255, 255, 0.12) 70%,
+                rgba(255, 255, 255, 0.03) 85%,
+                transparent 100%
+            );
+            transform: scale(0.2);
+            opacity: 0;
+            animation: waterRipple 1.4s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            mix-blend-mode: screen;
+            filter: blur(1.5px);
+        }
+
+        @keyframes waterRipple {
+            0% { transform: scale(0.3); opacity: 0.8; filter: blur(1.5px); }
+            100% { transform: scale(3); opacity: 0; filter: blur(8px); }
+        }
+
+        .hero-content {
+            position: relative; z-index: 4; padding: 80px 60px; color: #fff; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; max-width: 700px;
+            animation: fadeIn 0.8s ease-out;
+            pointer-events: none;
+        }
+        .hero-content a, .hero-content input, .hero-content button { pointer-events: auto; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hero-date { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; color: rgba(255,255,255,0.7); }
+        .hero-title { font-family: var(--font-serif); font-size: 64px; line-height: 1.1; margin-bottom: 25px; font-weight: 500; }
+        .hero-quote { font-family: var(--font-serif); font-size: 24px; font-style: italic; margin-bottom: 15px; color: rgba(255,255,255,0.95); }
+        .hero-source { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 50px; }
+        
+        .hero-search-bar { display: flex; align-items: center; gap: 20px; }
+        .search-input-wrapper {
+            background: #fff; border-radius: 30px; padding: 5px 15px 5px 25px;
+            display: flex; align-items: center; justify-content: space-between; width: 400px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .search-input-wrapper:focus-within {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.4), 0 8px 25px rgba(0,0,0,0.2); transform: translateY(-2px);
+        }
+        .search-input-wrapper input { 
+            flex: 1; border: none; outline: none; font-size: 14px; 
+            color: var(--text-main); background: transparent; 
+        }
+        .search-input-wrapper button { 
+            background: transparent; border: none; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); padding: 5px; transition: var(--transition);
+        }
+        .search-input-wrapper button:hover { color: var(--text-main); transform: scale(1.1); }
+        
+        .browse-all { font-size: 13px; color: #fff; text-decoration: underline; text-underline-offset: 4px; transition: opacity 0.2s; }
+        .browse-all:hover { opacity: 0.7; }
+        
+        .hero-pagination {
+            position: absolute; bottom: 60px; right: 80px; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; gap: 25px;
+            mix-blend-mode: difference; color: #ffffff;
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
+            pointer-events: none;
+        }
+        .hero-pagination button { pointer-events: auto; }
+        
+        .page-counter { display: flex; flex-direction: column; align-items: center; font-family: var(--font-serif); }
+        .current-num { font-size: 56px; line-height: 1; font-weight: 400; letter-spacing: 2px; }
+        .divider-line { width: 48px; height: 1px; background-color: currentColor; margin: 12px 0; opacity: 0.8; }
+        .total-num { font-size: 22px; font-style: italic; opacity: 0.85; }
+        .arrows { display: flex; gap: 16px; }
+        .arrow-btn {
+            width: 52px; height: 52px; border-radius: 50%; border: 1px solid currentColor;
+            background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; color: inherit;
+        }
+        .arrow-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+        .arrow-btn:hover { background: rgba(128, 128, 128, 0.2); transform: scale(1.08); }
+
+        .section-header { margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .section-title { font-family: var(--font-serif); font-size: 28px; font-weight: 500; }
+        .view-all { font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 5px; transition: var(--transition); }
+        .view-all:hover { color: var(--text-main); transform: translateX(3px); }
+
+        /* === 特性介绍区：卡片化升级 === */
+        .features-section {
+            padding: 80px 0; border-bottom: 1px solid var(--border-color);
+            display: grid; grid-template-columns: 1fr 2fr; gap: 60px;
+        }
+        .features-left h2 { font-family: var(--font-serif); font-size: 36px; line-height: 1.2; margin-bottom: 20px; }
+        .features-left p { color: var(--text-secondary); font-size: 14px; margin-bottom: 30px; max-width: 80%; }
+        
+        .features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        
+        .feature-item { 
+            text-align: left; 
+            background: var(--card-bg);
+            padding: 30px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-base);
+            transition: var(--transition); 
+        }
+        .feature-item:hover { 
+            transform: translateY(-8px); 
+            box-shadow: var(--shadow-hover);
+            border-color: transparent;
+        }
+        .feature-icon { margin-bottom: 20px; color: var(--text-main); display: flex; }
+        .feature-icon svg { width: 32px; height: 32px; stroke-width: 1.2; transition: var(--transition); }
+        .feature-item:hover .feature-icon svg { stroke: #000; transform: scale(1.1); }
+        .feature-item h4 { font-size: 15px; margin-bottom: 10px; font-weight: 600; }
+        .feature-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+        /* === 分类浏览区：增强悬浮卡片 === */
+        .category-section { padding: 80px 0; border-bottom: 1px solid var(--border-color); }
+        .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; }
+        .category-card {
+            background: var(--card-bg); border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--border-color); 
+            box-shadow: var(--shadow-base); /* 增加初始阴影 */
+            transition: var(--transition);
+            position: relative; cursor: pointer;
+            display: flex; flex-direction: column;
+        }
+        .category-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: var(--shadow-hover); 
+            border-color: transparent; 
+        }
+        .category-img-wrapper { overflow: hidden; height: 250px; }
+        .category-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .category-card:hover .category-img { transform: scale(1.08); }
+        .category-info { padding: 24px 20px; background: var(--card-bg); position: relative; z-index: 1; flex: 1; }
+        .category-info h3 { font-family: var(--font-serif); font-size: 18px; margin-bottom: 5px; transition: color 0.2s; }
+        .category-card:hover .category-info h3 { color: #000; }
+        .category-info p { font-size: 13px; color: var(--text-secondary); }
+        
+        /* 特殊卡片A24 */
+        .category-card.a24-card {
+            background: #000; display: flex; align-items: center; justify-content: center; border: none;
+        }
+        .category-card.a24-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        .category-card.a24-card div { color: #fff; font-family: var(--font-serif); font-size: 40px; letter-spacing: -2px; }
+
+        /* === 精选台词区：卡片化 === */
+        .featured-section { padding: 80px 0; border-bottom: 1px solid var(--border-color); }
+        .featured-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .line-card {
+            background: var(--card-bg); border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--border-color); display: flex; flex-direction: column;
+            box-shadow: var(--shadow-base); /* 增加初始阴影 */
+            transition: var(--transition);
+        }
+        .line-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: var(--shadow-hover); 
+            border-color: transparent; 
+        }
+        .line-card-top { position: relative; height: 220px; overflow: hidden; }
+        .line-card-top img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .line-card:hover .line-card-top img { transform: scale(1.05); }
+        .line-subtitle-overlay { position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; color: #fff; font-size: 14px; padding: 0 20px; text-shadow: 1px 1px 4px rgba(0,0,0,0.9); transition: transform 0.3s; }
+        .line-card:hover .line-subtitle-overlay { transform: translateY(-3px); }
+        .line-card-body { padding: 30px; flex: 1; display: flex; flex-direction: column; }
+        .line-title { font-family: var(--font-serif); font-size: 24px; font-style: italic; margin-bottom: 20px; }
+        
+        .line-movie-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); margin-bottom: 25px; padding: 6px 14px; border: 1px solid var(--border-color); border-radius: 20px; align-self: flex-start; transition: var(--transition); background: #fafafa; }
+        .line-movie-tag:hover { background: #fff; border-color: var(--text-main); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        
+        .line-detail-block { margin-bottom: 20px; }
+        .line-detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 5px; font-weight: 600; }
+        .line-detail-text { font-size: 14px; line-height: 1.6; color: #333; }
+        
+        .line-tags { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; }
+        .tag { font-size: 11px; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border-color); color: var(--text-secondary); transition: var(--transition); background: #fafafa; }
+        .tag:hover { background: var(--text-main); color: #fff; border-color: var(--text-main); }
+
+        /* 话题探索 */
+        .topic-section { padding: 60px 0; border-bottom: 1px solid var(--border-color); }
+        .topic-tags { display: flex; flex-wrap: wrap; gap: 15px; }
+        .topic-tag { padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 30px; font-size: 13px; color: var(--text-main); cursor: pointer; background: var(--card-bg); transition: var(--transition); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .topic-tag:hover { border-color: var(--text-main); background: var(--text-main); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .topic-tag:active { transform: scale(0.96); }
+
+        /* 留言板 */
+        .about-section { padding: 80px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+        .about-left h2 { font-family: var(--font-serif); font-size: 32px; margin-bottom: 20px; }
+        .about-left p { color: var(--text-secondary); font-size: 14px; margin-bottom: 40px; max-width: 90%; }
+        .about-image { border-radius: 16px; height: 300px; width: 100%; object-fit: cover; margin-bottom: 30px; transition: var(--transition); box-shadow: var(--shadow-base); }
+        .about-image:hover { filter: brightness(0.95); transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+        
+        .learning-together { background: var(--dark-bg); color: #fff; border-radius: 16px; padding: 50px; display: flex; flex-direction: column; box-shadow: var(--shadow-base); }
+        .learning-together h2 { font-family: var(--font-serif); font-size: 28px; margin-bottom: 15px; }
+        .learning-together p { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 30px; }
+        
+        .btn-comment { background: #fff; color: var(--dark-bg); border: none; padding: 14px 28px; border-radius: 30px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; align-self: flex-start; margin-bottom: 50px; transition: var(--transition); box-shadow: 0 4px 15px rgba(255,255,255,0.1); }
+        .btn-comment:hover { background: #e8e8e8; transform: translateY(-3px); box-shadow: 0 8px 25px rgba(255,255,255,0.2); }
+        .btn-comment:active { transform: scale(0.96); }
+        .btn-comment svg { width: 18px; height: 18px; stroke-width: 1.5; stroke: var(--text-main); }
+        
+        .comments-title { font-size: 14px; font-weight: 600; margin-bottom: 20px; }
+        .comment-list { display: flex; flex-direction: column; gap: 25px; flex: 1; }
+        .comment-item { display: flex; gap: 15px; transition: var(--transition); }
+        .comment-item:hover { transform: translateX(5px); }
+        .comment-avatar { width: 44px; height: 44px; border-radius: 50%; background: #333; object-fit: cover; border: 2px solid transparent; transition: border 0.2s; }
+        .comment-item:hover .comment-avatar { border-color: rgba(255,255,255,0.3); }
+        .comment-content { flex: 1; }
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .comment-name { font-size: 13px; font-weight: 500; }
+        .comment-date { font-size: 11px; color: rgba(255,255,255,0.4); }
+        .comment-text { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+        .view-comments { display: inline-block; margin-top: 30px; font-size: 13px; color: #fff; text-decoration: underline; text-underline-offset: 4px; transition: opacity 0.2s; }
+        .view-comments:hover { opacity: 0.7; }
+
+        /* 页脚 */
+        .footer { padding: 60px 0; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+        .footer-col h4 { font-size: 14px; margin-bottom: 20px; font-weight: 500; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.2s; position: relative; }
+        .footer-links a::before { content: '→'; position: absolute; left: -15px; opacity: 0; transition: all 0.2s; }
+        .footer-links a:hover { color: var(--text-main); padding-left: 5px; }
+        .footer-links a:hover::before { opacity: 1; left: -5px; }
+        .footer-bottom { font-size: 12px; color: var(--text-secondary); margin-top: 20px; }
+        .social-icons { display: flex; gap: 15px; margin-top: 15px; }
+        .social-icon { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 14px; font-weight: 500; transition: var(--transition); background: var(--card-bg); }
+        .social-icon:hover { border-color: var(--text-main); color: var(--text-main); transform: translateY(-3px); box-shadow: var(--shadow-base); }
+        .social-icon:active { transform: scale(0.92); }
+        .social-icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+        @media (max-width: 1024px) {
+            .features-section { grid-template-columns: 1fr; gap: 40px; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .category-grid { grid-template-columns: repeat(3, 1fr); }
+            .featured-grid { grid-template-columns: repeat(2, 1fr); }
+            .about-section { grid-template-columns: 1fr; }
+            .footer { grid-template-columns: 1fr 1fr; }
+            .hero-title { font-size: 48px; }
+            .hero-pagination { right: 40px; bottom: 40px; }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 0 20px; }
+            .nav-links { display: none; }
+            .hero { height: auto; min-height: 500px; margin: 10px; }
+            .hero-content { padding: 40px 20px; }
+            .hero-title { font-size: 36px; }
+            .hero-search-bar { flex-direction: column; align-items: flex-start; }
+            .search-input-wrapper { width: 100%; }
+            .hero-pagination { right: 20px; bottom: 20px; gap: 15px; transform: scale(0.8); transform-origin: bottom right; }
+            .features-grid { grid-template-columns: 1fr; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .featured-grid { grid-template-columns: 1fr; }
+            .learning-together { padding: 30px 20px; }
+            .footer { grid-template-columns: 1fr; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="navbar flex-between">
+            <div class="logo">Love Lan.</div>
+            <nav class="nav-links">
+                <a href="#">Home</a>
+                <a href="#">TV Shows</a>
+                <a href="#">Movies</a>
+                <a href="#">Topics</a>
+                <a href="#">Collections</a>
+                <a href="#">About</a>
+            </nav>
+            
+            <button class="search-btn">
+                Search
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <circle cx="9" cy="10" r="7" stroke-width="1.8" />
+                    <circle cx="9" cy="10" r="5.5" stroke-width="0.8" />
+                    <line x1="16" y1="10" x2="16" y2="22" stroke-width="1.5" />
+                    <line x1="14.5" y1="12" x2="17.5" y2="12" stroke-width="1" />
+                    <line x1="14.5" y1="14" x2="17.5" y2="14" stroke-width="1" />
+                    <line x1="14.5" y1="16" x2="17.5" y2="16" stroke-width="1" />
+                    <line x1="14.5" y1="18" x2="17.5" y2="18" stroke-width="1" />
+                    <line x1="14.5" y1="20" x2="17.5" y2="20" stroke-width="1" />
+                    <circle cx="16" cy="10" r="1.5" fill="currentColor" stroke="none" />
+                </svg>
+            </button>
+        </header>
+    </div>
+
+    <!-- Hero 区域 -->
+    <div class="container">
+        <section class="hero" id="hero-section">
+            <div class="hero-bg" id="hero-bg"></div>
+            <div class="hero-ripples" id="hero-ripples"></div>
+
+            <div class="hero-content">
+                <div class="hero-date">Daily Pick &nbsp; May 19, 2024</div>
+                <h1 class="hero-title">Today's<br>Handpicked Line</h1>
+                <p class="hero-quote">"Sometimes, good people<br>make bad choices."</p>
+                <div class="hero-source">— 13 Reasons Why S01E07</div>
+                <div class="hero-search-bar">
+                    <div class="search-input-wrapper">
+                        <input type="text" placeholder="Search quotes, shows, topics...">
+                        <button aria-label="Search">
+                            <svg class="icon" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="16" y1="16" x2="21" y2="21"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <a href="#" class="browse-all">Browse All</a>
+                </div>
+            </div>
+            
+            <div class="hero-pagination">
+                <div class="page-counter">
+                    <span class="current-num">01</span>
+                    <div class="divider-line"></div>
+                    <span class="total-num">/ 05</span>
+                </div>
+                <div class="arrows">
+                    <button class="arrow-btn" aria-label="Previous">
+                        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button class="arrow-btn" aria-label="Next">
+                        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 特性介绍 -->
+    <div class="container">
+        <section class="features-section">
+            <div class="features-left">
+                <h2>Learn Natural English<br>from Real Script.</h2>
+                <p>Love Lan is a visual phrase knowledge base for authentic expressions in film and TV. All notes are personally curated, organized, and shared for free to help English learners see how real English is used—in context.</p>
+                <a href="#" class="view-all">Learn more about Love Lan &rarr;</a>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                    </div>
+                    <h4>Authentic & Contextual</h4>
+                    <p>Learn real English from real scenes.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                    </div>
+                    <h4>Curated Notes</h4>
+                    <p>Personal notes with clear explanations.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                    </div>
+                    <h4>Topic-Based Learning</h4>
+                    <p>From daily life to workplace situations.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                    </div>
+                    <h4>Free & Open</h4>
+                    <p>Shared freely for all English learners.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 分类浏览 -->
+    <div class="container">
+        <section class="category-section">
+            <div class="section-header">
+                <h2 class="section-title">Browse by Category</h2>
+                <div class="flex-between" style="gap: 20px;">
+                    <a href="#" class="view-all">View all categories</a>
+                    <div class="arrows" style="color: var(--text-main);">
+                        <button class="arrow-btn" style="border-color: var(--border-color); color: var(--text-main); width: 40px; height: 40px; box-shadow: var(--shadow-base); background: var(--card-bg);">&#8249;</button>
+                        <button class="arrow-btn" style="border-color: var(--border-color); color: var(--text-main); width: 40px; height: 40px; box-shadow: var(--shadow-base); background: var(--card-bg);">&#8250;</button>
+                    </div>
+                </div>
+            </div>
+            <div class="category-grid">
+                <div class="category-card">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1497215842964-222b430dc094?q=80&w=500&auto=format&fit=crop" alt="US TV Shows" class="category-img">
+                    </div>
+                    <div class="category-info">
+                        <h3>US TV Shows</h3>
+                        <p>128 shows</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?q=80&w=500&auto=format&fit=crop" alt="UK TV Shows" class="category-img">
+                    </div>
+                    <div class="category-info">
+                        <h3>UK TV Shows</h3>
+                        <p>82 shows</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=500&auto=format&fit=crop" alt="Movies" class="category-img">
+                    </div>
+                    <div class="category-info">
+                        <h3>Movies</h3>
+                        <p>156 movies</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1542451313056-b7c8e626645f?q=80&w=500&auto=format&fit=crop" alt="Animated" class="category-img">
+                    </div>
+                    <div class="category-info">
+                        <h3>Animated</h3>
+                        <p>38 shows</p>
+                    </div>
+                </div>
+                <!-- A24 卡片采用独立类名控制悬浮 -->
+                <div class="category-card a24-card">
+                     <div>A24</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 精选台词 -->
+    <div class="container">
+        <section class="featured-section">
+            <div class="section-header">
+                <h2 class="section-title">Featured Lines</h2>
+                <a href="#" class="view-all">View all &rarr;</a>
+            </div>
+            <div class="featured-grid">
+                <div class="line-card">
+                    <div class="line-card-top">
+                        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=800&auto=format&fit=crop" alt="The Office Scene">
+                        <div class="line-subtitle-overlay">"I'm not superstitious, but I am a little stitious."</div>
+                    </div>
+                    <div class="line-card-body">
+                        <div class="line-title">"a little stitious"</div>
+                        <div class="line-movie-tag">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                            The Office S02E20
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Meaning</div>
+                            <div class="line-detail-text">Slightly superstitious.</div>
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Explanation</div>
+                            <div class="line-detail-text">A humorous way to say someone is a bit superstitious, often used in a lighthearted context.</div>
+                        </div>
+                        <div class="line-tags">
+                            <span class="tag">Daily Life</span>
+                            <span class="tag">Personality</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="line-card">
+                    <div class="line-card-top">
+                        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop" alt="The Devil Wears Prada Scene">
+                        <div class="line-subtitle-overlay">"That's all."</div>
+                    </div>
+                    <div class="line-card-body">
+                        <div class="line-title">"That's all."</div>
+                        <div class="line-movie-tag">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                            The Devil Wears Prada
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Meaning</div>
+                            <div class="line-detail-text">That's the entire list. Nothing more.</div>
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Explanation</div>
+                            <div class="line-detail-text">A concise and confident way to indicate that there is nothing else to add.</div>
+                        </div>
+                        <div class="line-tags">
+                            <span class="tag">Workplace</span>
+                            <span class="tag">Communication</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="line-card">
+                    <div class="line-card-top">
+                        <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=800&auto=format&fit=crop" alt="Inception Scene">
+                        <div class="line-subtitle-overlay">"An idea is like a virus, resilient, highly contagious."</div>
+                    </div>
+                    <div class="line-card-body">
+                        <div class="line-title">"resilient, highly contagious"</div>
+                        <div class="line-movie-tag">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                            Inception
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Meaning</div>
+                            <div class="line-detail-text">Spreads easily and is hard to stop.</div>
+                        </div>
+                        <div class="line-detail-block">
+                            <div class="line-detail-label">Explanation</div>
+                            <div class="line-detail-text">Used to describe ideas that influence and spread among people quickly.</div>
+                        </div>
+                        <div class="line-tags">
+                            <span class="tag">Ideas & Thinking</span>
+                            <span class="tag">Metaphor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 话题探索 -->
+    <div class="container">
+        <section class="topic-section">
+            <div class="section-header">
+                <h2 class="section-title">Explore by Topic</h2>
+                <a href="#" class="view-all">View all topics &rarr;</a>
+            </div>
+            <div class="topic-tags">
+                <span class="topic-tag">Daily Life</span>
+                <span class="topic-tag">Workplace</span>
+                <span class="topic-tag">Relationships</span>
+                <span class="topic-tag">Emotions</span>
+                <span class="topic-tag">Communication</span>
+                <span class="topic-tag">Social Skills</span>
+                <span class="topic-tag">Motivation</span>
+                <span class="topic-tag">Humor</span>
+                <span class="topic-tag">Perspectives</span>
+                <span class="topic-tag">Culture</span>
+                <span class="topic-tag">School</span>
+                <span class="topic-tag">Family</span>
+                <span class="topic-tag">Health</span>
+                <span class="topic-tag">Money</span>
+                <span class="topic-tag">Time Management</span>
+                <span class="topic-tag">More +</span>
+            </div>
+        </section>
+    </div>
+
+    <!-- 关于与留言板 -->
+    <div class="container">
+        <section class="about-section">
+            <div class="about-left">
+                <h2>About Love Lan</h2>
+                <p>Love Lan is a personal project and a passion-driven knowledge base built for English learners around the world.</p>
+                <img src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=800&auto=format&fit=crop" alt="Coffee and book" class="about-image">
+                <a href="#" class="view-all">Learn more about the site &rarr;</a>
+            </div>
+            <div class="learning-together">
+                <h2>Learning Together</h2>
+                <p>Have a question, suggestion, or a great line to share? We'd love to hear from you.</p>
+                
+                <button class="btn-comment">
+                    Leave a Comment
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
+                
+                <div class="comments-title">Latest Comments</div>
+                <div class="comment-list">
+                    <div class="comment-item">
+                        <img src="https://i.pravatar.cc/100?img=1" alt="Emma" class="comment-avatar">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-name">Emma</span>
+                                <span class="comment-date">May 18, 2024</span>
+                            </div>
+                            <div class="comment-text">This site is a great help! It helped me so much with real-life expressions.</div>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <img src="https://i.pravatar.cc/100?img=3" alt="Lucas" class="comment-avatar">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-name">Lucas</span>
+                                <span class="comment-date">May 17, 2024</span>
+                            </div>
+                            <div class="comment-text">I love the topic tags. It makes learning so much more efficient.</div>
+                        </div>
+                    </div>
+                    <div class="comment-item">
+                        <img src="https://i.pravatar.cc/100?img=5" alt="Chloe" class="comment-avatar">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-name">Chloe</span>
+                                <span class="comment-date">May 16, 2024</span>
+                            </div>
+                            <div class="comment-text">Could you explain more about this line? "Break a leg"</div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" class="view-comments">View all comments &rarr;</a>
+            </div>
+        </section>
+    </div>
+
+    <!-- 页脚 -->
+    <div class="container">
+        <footer class="footer">
+            <div>
+                <div class="logo" style="margin-bottom: 15px;">Love Lan.</div>
+                <div class="footer-bottom">© 2026 Love Lan. All rights reserved.</div>
+            </div>
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <ul class="footer-links">
+                    <li><a href="#">TV Shows</a></li>
+                    <li><a href="#">Movies</a></li>
+                    <li><a href="#">Topics</a></li>
+                    <li><a href="#">Collections</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>About</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Love Lan</a></li>
+                    <li><a href="#">Note-Taking Method</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Follow</h4>
+                <div class="social-icons">
+                    <a href="#" class="social-icon" title="小红书">红</a>
+                    <a href="#" class="social-icon" title="抖音">
+                        <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                    </a>
+                    <a href="#" class="social-icon" title="微信公众号">
+                        <svg viewBox="0 0 24 24"><path d="M8.7 13.2c-3.7 0-6.7-2.5-6.7-5.5 0-3 3-5.5 6.7-5.5 3.7 0 6.7 2.5 6.7 5.5 0 1.3-.5 2.5-1.5 3.5l1.3 2.2-2.3-.8c-1 .4-2.2.6-3.4.6h-.8zM17.6 19.2c-2.7 0-4.9-1.8-4.9-4.1 0-2.3 2.2-4.1 4.9-4.1s4.9 1.8 4.9 4.1c0 1.1-.4 2-1.2 2.8l1 1.7-1.8-.6c-.9.4-1.9.6-2.9.6h-.1z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 核心 JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const heroSection = document.getElementById('hero-section');
+            const heroBg = document.getElementById('hero-bg');
+            const rippleContainer = document.getElementById('hero-ripples');
+            
+            let lastRippleX = -1000;
+            let lastRippleY = -1000;
+
+            heroSection.addEventListener('mousemove', (e) => {
+                const rect = heroSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // 更新光晕
+                heroSection.style.setProperty('--mouse-x', `${x}px`);
+                heroSection.style.setProperty('--mouse-y', `${y}px`);
+
+                // 计算视差位移并放大
+                const cx = rect.width / 2;
+                const cy = rect.height / 2;
+                const dx = (x - cx) / cx;
+                const dy = (y - cy) / cy;
+                heroBg.style.transform = `scale(1.06) translate(${-dx * 15}px, ${-dy * 15}px)`;
+
+                // 生成水滴涟漪
+                const dist = Math.hypot(x - lastRippleX, y - lastRippleY);
+                if (dist > 60) {
+                    createRipple(x, y);
+                    lastRippleX = x;
+                    lastRippleY = y;
+                }
+            });
+
+            heroSection.addEventListener('mouseleave', () => {
+                heroSection.style.setProperty('--mouse-x', `-1000px`);
+                heroSection.style.setProperty('--mouse-y', `-1000px`);
+                heroBg.style.transform = `scale(1) translate(0, 0)`;
+            });
+
+            function createRipple(x, y) {
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                
+                const size = Math.random() * 40 + 80; 
+                ripple.style.width = `${size}px`;
+                ripple.style.height = `${size}px`;
+                ripple.style.left = `${x - size/2}px`;
+                ripple.style.top = `${y - size/2}px`;
+                
+                rippleContainer.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 1400);
+            }
+        });
+    </script>
+</body>
+</html>
